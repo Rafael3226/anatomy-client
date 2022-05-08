@@ -1,41 +1,43 @@
 import React, { useState } from 'react';
+import ObjectViewer from '../ObjectViewer/ObjectViewer';
 
 function ObjectLoader() {
-  const [fileNames, setFileNames] = useState<string[]>([]);
-  const [arrayBuffers, setArrayBuffer] = useState<ArrayBuffer[]>([]);
+  const [mtlPath, setMtlPath] = useState('');
+  const [objPath, setObjPath] = useState('');
+
+  const [mtlFile, setMtlFile] = useState<File>(new File([], ''));
+  const [objFile, setObjFile] = useState<File>(new File([], ''));
+
   const [loading, setLoading] = useState(false);
 
-  async function handleFiles(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleMtlFile(event: React.ChangeEvent<HTMLInputElement>) {
     setLoading(true);
-    const { files } = event.target;
-    if (files !== null) {
-      for (let file of files) {
-        const arrayBuffer = await file.arrayBuffer();
-        setFileNames((names) => {
-          setArrayBuffer((buffers) => {
-            if (!names.includes(file.name)) {
-              buffers.push(arrayBuffer);
-              names.push(file.name);
-            }
-            return buffers;
-          });
-          return names;
-        });
-      }
-    }
+    const { files, value } = event.target;
+    setMtlPath(value);
+    if (files === null || files.length === 0) return;
+    setMtlFile(files[0]);
+    setLoading(false);
+  }
+  async function handleObjFile(event: React.ChangeEvent<HTMLInputElement>) {
+    setLoading(true);
+    const { files, value } = event.target;
+    setObjPath(value);
+    if (files === null || files.length === 0) return;
+    setObjFile(files[0]);
     setLoading(false);
   }
   if (loading) return <div>Loading...</div>;
   return (
     <div>
-      <input type="file" onChange={handleFiles} multiple />
-      {Array.from(fileNames).map((name, key) => (
-        <div key={key}>{name}</div>
-      ))}
-      {arrayBuffers.map((buffer, key) => (
-        <div key={key}>{buffer.byteLength}</div>
-      ))}
-      <div id="obj"></div>
+      <div>
+        <label>OBJ File</label>
+        <input type="file" onChange={handleObjFile} />
+      </div>
+      <div>
+        <label>MTL File</label>
+        <input type="file" onChange={handleMtlFile} />
+      </div>
+      <ObjectViewer mtlPath={mtlPath} objPath={objPath} />
     </div>
   );
 }
